@@ -1,0 +1,81 @@
+package interfazrepo.repositorio;
+
+import interfazrepo.modelo.Cliente;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class ClienteListRepositorio implements CrudRepositorio, OrdenableRepositorio, PaginableRepositorio{
+
+    List<Cliente> dataSource;
+
+    public ClienteListRepositorio() {
+        this.dataSource = new ArrayList<>();
+    }
+
+    @Override
+    public List<Cliente> listar() {
+        return dataSource;
+    }
+
+    @Override
+    public Cliente porId(Integer id) {
+        Cliente resultado = null;
+        for(Cliente cli : dataSource){
+            if(cli.getId() != null && cli.getId().equals(id)){
+                resultado = cli;
+                break;
+            }
+        }
+        return resultado;
+    }
+
+    @Override
+    public void crear(Cliente cliente) {
+        this.dataSource.add(cliente);
+    }
+
+    @Override
+    public void editar(Cliente cliente) {
+        Cliente c = this.porId(cliente.getId());
+        c.setNombre(cliente.getNombre());
+        c.setApellido(cliente.getApellido());
+    }
+
+    @Override
+    public void eliminar(Integer id) {
+        Cliente c = this.porId(id);
+        this.dataSource.remove(c);  // this.dataSource.remove(this.porId(id));
+    }
+
+    //ORDENAR
+    @Override
+    public List<Cliente> listar(String campo, Direccion dir) {
+        dataSource.sort((o1, o2) -> {
+            int resultado = 0;
+
+                if(dir == Direccion.ASC){
+                    switch (campo){
+                        case "id" -> resultado = o1.getId().compareTo(o2.getId());
+                        case "nombre" -> resultado = o1.getNombre().compareTo(o2.getNombre());
+                        case "apellido" -> resultado = o1.getApellido().compareTo(o2.getApellido());
+                    }
+                }else if(dir == Direccion.DESC){
+                    switch (campo){
+                        case "id" -> resultado = o2.getId().compareTo(o1.getId());
+                        case "nombre" -> resultado = o2.getNombre().compareTo(o1.getNombre());
+                        case "apellido" -> resultado = o2.getApellido().compareTo(o1.getApellido());
+                    }
+                }
+                return resultado;
+        });
+        return dataSource;
+    }
+
+    @Override
+    public List<Cliente> listar(int desde, int hasta) {
+        return dataSource.subList(desde, hasta);
+    }
+
+}
