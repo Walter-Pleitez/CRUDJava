@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-public class ClienteListRepositorio implements CrudRepositorio, OrdenableRepositorio, PaginableRepositorio{
+public class ClienteListRepositorio implements FullRepo{
 
     List<Cliente> dataSource;
 
@@ -52,25 +52,33 @@ public class ClienteListRepositorio implements CrudRepositorio, OrdenableReposit
     //ORDENAR
     @Override
     public List<Cliente> listar(String campo, Direccion dir) {
-        dataSource.sort((o1, o2) -> {
-            int resultado = 0;
+        List<Cliente> listaOrdenada = new ArrayList<>(this.dataSource);  //OPTIMIZANDO
+        listaOrdenada.sort(new Comparator<Cliente>() {  //OPTIMIZANDO
+            @Override
+            public int compare(Cliente o1, Cliente o2) {
+                int resultado = 0;
 
                 if(dir == Direccion.ASC){
-                    switch (campo){
-                        case "id" -> resultado = o1.getId().compareTo(o2.getId());
-                        case "nombre" -> resultado = o1.getNombre().compareTo(o2.getNombre());
-                        case "apellido" -> resultado = o1.getApellido().compareTo(o2.getApellido());
-                    }
+                    resultado = this.ordenar(o1,o2);  //OPTIMIZANDO
                 }else if(dir == Direccion.DESC){
-                    switch (campo){
-                        case "id" -> resultado = o2.getId().compareTo(o1.getId());
-                        case "nombre" -> resultado = o2.getNombre().compareTo(o1.getNombre());
-                        case "apellido" -> resultado = o2.getApellido().compareTo(o1.getApellido());
-                    }
+                    resultado = this.ordenar(o2,o1);  //OPTIMIZANDO
+                }
+
+                return resultado;
+            }
+            //OPTIMIZANDO
+            private int ordenar(Cliente o1, Cliente o2){
+                int resultado = 0;
+                switch (campo){
+                    case "id" -> resultado = o1.getId().compareTo(o2.getId());
+                    case "nombre" -> resultado = o1.getNombre().compareTo(o2.getNombre());
+                    case "apellido" -> resultado = o1.getApellido().compareTo(o2.getApellido());
                 }
                 return resultado;
+            }
+
         });
-        return dataSource;
+        return listaOrdenada;
     }
 
     @Override
@@ -78,4 +86,9 @@ public class ClienteListRepositorio implements CrudRepositorio, OrdenableReposit
         return dataSource.subList(desde, hasta);
     }
 
+    //OPTMIZANDO
+    @Override
+    public int total() {
+        return this.dataSource.size();
+    }
 }
